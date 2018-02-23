@@ -18,7 +18,13 @@ cd docker-zabbix-demo
 Create the environment:
 
 ```
-docker-compose up -d
+docker-compose up -d --build
+```
+
+Or overriding the time zone:
+
+```
+PHP_TZ=Europe/Madrid docker-compose up -d --build
 ```
 
 The provision can take some minutes (mostly setting up the database); you can monitor the LOGs using the command below.
@@ -41,4 +47,16 @@ Destroy the environment:
 
 ```
 docker-compose rm
+```
+
+
+## Problems
+
+### bash: docker-entrypoint.sh: command not found
+
+Please ensure you don't already have an image for that container (its entrypoint has changed recently). To force the download of the new images, delete the old ones:
+
+```
+docker-compose rm -f -s
+docker rmi zabbix/zabbix-server-mysql:ubuntu-3.4-latest zabbix/zabbix-web-apache-mysql:ubuntu-3.4-latest zabbix/zabbix-agent:ubuntu-3.4-latest
 ```

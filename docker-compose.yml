@@ -46,7 +46,7 @@ services:
       MYSQL_USER: zabbix_user
       MYSQL_PASSWORD: zabbix_password
       ZBX_SERVER_HOST: zabbix-server
-      PHP_TZ: Europe/Madrid
+      PHP_TZ: ${PHP_TZ}
     ports:
       - 8080:80/tcp
     entrypoint: bash -c "( while ! nc -z -w 1 zabbix-server 10051 ; do echo 'Zabbix Server not ready; waiting...' ; sleep 5 ; done ) ; docker-entrypoint.sh"
