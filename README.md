@@ -21,7 +21,9 @@ Create the environment:
 docker-compose up -d
 ```
 
-Then, you can access the Zabbix Web UI using the URL [http://localhost:8080](http://localhost:8080), and the username `Admin` and the password `zabbix`.
+The provision can take some minutes (mostly setting up the database); you can monitor the LOGs using the command below.
+
+Once finished, you can access the Zabbix Web UI using the URL [http://localhost:8080](http://localhost:8080), and the username `Admin` and the password `zabbix`.
 
 To view the LOGs:
 
