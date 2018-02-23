@@ -1,0 +1,99 @@
+
+###############################################################################
+#
+# Zabbix web:
+# - URL: http://localhost:8080
+# - User: Admin
+# - Password: zabbix
+#
+###############################################################################
+
+version: '3'
+
+services:
+  
+  zabbix-mariadb:
+    image: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpw
+    networks:
+      main:
+        aliases:
+          - zabbix-mariadb
+
+  zabbix-server:
+    image: zabbix/zabbix-server-mysql:ubuntu-3.4-latest
+    depends_on:
+      - zabbix-mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpw
+      DB_SERVER_HOST: zabbix-mariadb
+      MYSQL_USER: zabbix_user
+      MYSQL_PASSWORD: zabbix_password
+    entrypoint: bash -c "( while ! nc -z -w 1 zabbix-mariadb 3306 ; do echo 'MySQL Server not ready; waiting...' ; sleep 5 ; done ) ; docker-entrypoint.sh"
+    networks:
+      main:
+        aliases:
+          - zabbix-server
+
+  zabbix-web:
+    image: zabbix/zabbix-web-apache-mysql:ubuntu-3.4-latest
+    depends_on:
+      - zabbix-mariadb
+      - zabbix-server
+    environment:
+      DB_SERVER_HOST: zabbix-mariadb
+      MYSQL_USER: zabbix_user
+      MYSQL_PASSWORD: zabbix_password
+      ZBX_SERVER_HOST: zabbix-server
+      PHP_TZ: Europe/Madrid
+    ports:
+      - 8080:80/tcp
+    entrypoint: bash -c "( while ! nc -z -w 1 zabbix-server 10051 ; do echo 'Zabbix Server not ready; waiting...' ; sleep 5 ; done ) ; docker-entrypoint.sh"
+    networks:
+      main:
+        aliases:
+          - zabbix-web
+
+  zabbix-agent1:
+    image: zabbix/zabbix-agent:ubuntu-3.4-latest
+    depends_on:
+      - zabbix-server
+    environment:
+      ZBX_HOSTNAME: agent1
+      ZBX_SERVER_HOST: zabbix-server
+    entrypoint: bash -c "( while ! nc -z -w 1 zabbix-server 10051 ; do echo 'Zabbix Server not ready; waiting...' ; sleep 5 ; done ) ; docker-entrypoint.sh"
+    networks:
+      main:
+        aliases:
+          - agent1
+
+  zabbix-agent2:
+    image: zabbix/zabbix-agent:ubuntu-3.4-latest
+    depends_on:
+      - zabbix-server
+    environment:
+      ZBX_HOSTNAME: agent2
+      ZBX_SERVER_HOST: zabbix-server
+    entrypoint: bash -c "( while ! nc -z -w 1 zabbix-server 10051 ; do echo 'Zabbix Server not ready; waiting...' ; sleep 5 ; done ) ; docker-entrypoint.sh"
+    networks:
+      main:
+        aliases:
+          - agent2
+
+  # This is a simple image that just runs a couple of commands to register 
+  # the two agents created previously.
+  helper:
+    build:
+      context: ./zabbix-helper
+      args:
+        http_proxy: $http_proxy
+        https_proxy: $https_proxy
+    networks:
+      main:
+        aliases:
+          - helper
+
+networks:
+  main:
+
