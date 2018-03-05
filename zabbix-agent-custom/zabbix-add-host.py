@@ -37,10 +37,10 @@ if __name__ == "__main__":
     for template_name in args.templates:
         templates = zapi.template.get({"filter": {"host": template_name}})
         if not templates:
-            print(f"Template with name {template_name} not found.", file=sys.stderr)
+            print("Template with name {template_name} not found.".format(template_name=template_name), file=sys.stderr)
             sys.exit(1)
         elif len(templates) > 1:
-            print(f"Multiple templates found with name {template_name}.", file=sys.stderr)
+            print("Multiple templates found with name {template_name}.".format(template_name=template_name), file=sys.stderr)
             sys.exit(1)
         else:
             template_ids.append({"templateid": templates[0]["templateid"]})
@@ -49,10 +49,10 @@ if __name__ == "__main__":
     for group_name in args.groups:
         groups = zapi.hostgroup.get({"filter": {"name": group_name}})
         if not groups:
-            print(f"Group with name {group_name} not found.", file=sys.stderr)
+            print("Group with name {group_name} not found.".format(group_name=group_name), file=sys.stderr)
             sys.exit(1)
         elif len(groups) > 1:
-            print(f"Multiple groups found with name {group_name}.", file=sys.stderr)
+            print("Multiple groups found with name {group_name}.".format(group_name=group_name), file=sys.stderr)
             sys.exit(1)
         else:
             group_ids.append({"groupid": groups[0]["groupid"]})
@@ -61,10 +61,10 @@ if __name__ == "__main__":
     if args.proxy:
         proxies = zapi.proxy.get({"filter": {"host": args.proxy}})
         if not proxies:
-            print(f"Proxy with name {args.proxy} not found.", file=sys.stderr)
+            print("Proxy with name {proxy} not  ound.".format(proxy=args.proxy), file=sys.stderr)
             sys.exit(1)
         elif len(proxies) > 1:
-            print(f"Multiple proxies found with name {args.proxy}.", file=sys.stderr)
+            print("Multiple proxies found with name {proxy}.".format(proxy=args.proxy), file=sys.stderr)
             sys.exit(1)
         else:
             # Check host

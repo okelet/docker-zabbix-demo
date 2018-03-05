@@ -15,84 +15,86 @@ services:
   zabbix-mariadb:
     image: mariadb
     environment:
-      MYSQL_ROOT_PASSWORD: rootpw
+      - MYSQL_ROOT_PASSWORD=rootpw
     networks:
       main:
         aliases:
           - zabbix-mariadb
 
   zabbix-server:
-    image: zabbix/zabbix-server-mysql:ubuntu-3.4-latest
-    depends_on:
-      - zabbix-mariadb
+    build:
+      context: ./zabbix-server-custom
+      args:
+        - http_proxy
+        - https_proxy
     environment:
-      MYSQL_ROOT_PASSWORD: rootpw
-      DB_SERVER_HOST: zabbix-mariadb
-      MYSQL_USER: zabbix_user
-      MYSQL_PASSWORD: zabbix_password
-    entrypoint: bash -c "( while ! nc -z -w 1 zabbix-mariadb 3306 ; do echo 'MySQL Server not ready; waiting...' ; sleep 5 ; done ) ; docker-entrypoint.sh"
+      - MYSQL_ROOT_PASSWORD=rootpw
+      - DB_SERVER_HOST=zabbix-mariadb
+      - MYSQL_USER=zabbix_user
+      - MYSQL_PASSWORD=zabbix_password
+      - http_proxy
+      - https_proxy
     networks:
       main:
         aliases:
           - zabbix-server
 
   zabbix-web:
-    image: zabbix/zabbix-web-apache-mysql:ubuntu-3.4-latest
-    depends_on:
-      - zabbix-mariadb
-      - zabbix-server
+    build:
+      context: ./zabbix-web-custom
+      args:
+        - http_proxy
+        - https_proxy
     environment:
-      DB_SERVER_HOST: zabbix-mariadb
-      MYSQL_USER: zabbix_user
-      MYSQL_PASSWORD: zabbix_password
-      ZBX_SERVER_HOST: zabbix-server
-      PHP_TZ: ${PHP_TZ}
+      - DB_SERVER_HOST=zabbix-mariadb
+      - MYSQL_USER=zabbix_user
+      - MYSQL_PASSWORD=zabbix_password
+      - ZBX_SERVER_HOST=zabbix-server
+      - PHP_TZ
+      - http_proxy
+      - https_proxy
     ports:
       - 8080:80/tcp
-    entrypoint: bash -c "( while ! nc -z -w 1 zabbix-server 10051 ; do echo 'Zabbix Server not ready; waiting...' ; sleep 5 ; done ) ; docker-entrypoint.sh"
     networks:
       main:
         aliases:
           - zabbix-web
 
   zabbix-agent1:
-    image: zabbix/zabbix-agent:ubuntu-3.4-latest
-    depends_on:
-      - zabbix-server
+    build:
+      context: ./zabbix-agent-custom
+      args:
+        - http_proxy
+        - https_proxy
     environment:
-      ZBX_HOSTNAME: agent1
-      ZBX_SERVER_HOST: zabbix-server
-    entrypoint: bash -c "( while ! nc -z -w 1 zabbix-server 10051 ; do echo 'Zabbix Server not ready; waiting...' ; sleep 5 ; done ) ; docker-entrypoint.sh"
+      - http_proxy
+      - https_proxy
     networks:
       main:
-        aliases:
-          - agent1
 
   zabbix-agent2:
-    image: zabbix/zabbix-agent:ubuntu-3.4-latest
-    depends_on:
-      - zabbix-server
-    environment:
-      ZBX_HOSTNAME: agent2
-      ZBX_SERVER_HOST: zabbix-server
-    entrypoint: bash -c "( while ! nc -z -w 1 zabbix-server 10051 ; do echo 'Zabbix Server not ready; waiting...' ; sleep 5 ; done ) ; docker-entrypoint.sh"
-    networks:
-      main:
-        aliases:
-          - agent2
-
-  # This is a simple image that just runs a couple of commands to register 
-  # the two agents created previously.
-  helper:
     build:
-      context: ./zabbix-helper
+      context: ./zabbix-agent-custom
       args:
-        http_proxy: $http_proxy
-        https_proxy: $https_proxy
+        - http_proxy
+        - https_proxy
+    environment:
+      - http_proxy
+      - https_proxy
     networks:
       main:
-        aliases:
-          - helper
+
+  zabbix-agent3:
+    build:
+      context: ./zabbix-agent-custom
+      args:
+        - http_proxy
+        - https_proxy
+    environment:
+      - http_proxy
+      - https_proxy
+    networks:
+      main:
 
 networks:
   main:
